@@ -1,7 +1,11 @@
-import mongoose, {Schema} from "mongoose";
-import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"
+import mongoose, { Schema } from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
+/**
+ * User schema for MongoDB.
+ * @constant {Schema} userSchema
+ */
 const userSchema = new Schema(
     {
         username: {
@@ -9,20 +13,20 @@ const userSchema = new Schema(
             required: true,
             unique: true,
             lowercase: true,
-            trim: true, 
+            trim: true,
             index: true
         },
         email: {
             type: String,
             required: true,
             unique: true,
-            lowecase: true,
-            trim: true, 
+            lowercase: true,
+            trim: true,
         },
         fullName: {
             type: String,
             required: true,
-            trim: true, 
+            trim: true,
             index: true
         },
         avatar: {
@@ -50,20 +54,40 @@ const userSchema = new Schema(
     {
         timestamps: true
     }
-)
+);
 
+/**
+ * Middleware function executed before saving a user to hash the password.
+ * @function
+ * @async
+ * @name userSchema.pre
+ */
 userSchema.pre("save", async function (next) {
-    if(!this.isModified("password")) return next();
+    if (!this.isModified("password")) return next();
 
-    this.password = await bcrypt.hash(this.password, 10)
-    next()
-})
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
 
-userSchema.methods.isPasswordCorrect = async function(password){
-    return await bcrypt.compare(password, this.password)
-}
+/**
+ * Method to check if the provided password is correct.
+ * @function
+ * @async
+ * @name userSchema.methods.isPasswordCorrect
+ * @param {string} password - The password to check.
+ * @returns {boolean} - Returns true if the password is correct, false otherwise.
+ */
+userSchema.methods.isPasswordCorrect = async function (password) {
+    return await bcrypt.compare(password, this.password);
+};
 
-userSchema.methods.generateAccessToken = function(){
+/**
+ * Method to generate an access token for the user.
+ * @function
+ * @name userSchema.methods.generateAccessToken
+ * @returns {string} - The generated access token.
+ */
+userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
             _id: this._id,
@@ -75,19 +99,26 @@ userSchema.methods.generateAccessToken = function(){
         {
             expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
-    )
-}
-userSchema.methods.generateRefreshToken = function(){
+    );
+};
+
+/**
+ * Method to generate a refresh token for the user.
+ * @function
+ * @name userSchema.methods.generateRefreshToken
+ * @returns {string} - The generated refresh token.
+ */
+userSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
             _id: this._id,
-            
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
-    )
-}
+    );
+};
 
-export const User = mongoose.model("User", userSchema)
+// Exporting the User model
+export const User = mongoose.model("User", userSchema);
