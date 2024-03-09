@@ -1,12 +1,4 @@
-/**
- * Custom Error class for handling API errors.
- * @class ApiError
- * @extends Error
- * @param {number} statusCode - HTTP status code for the error.
- * @param {string} message - Error message (default: "Something went wrong").
- * @param {Array} errors - Array of error details (default: []).
- * @param {string} stack - Error stack trace (default: "").
- */
+
 class ApiError extends Error {
 
     constructor(
