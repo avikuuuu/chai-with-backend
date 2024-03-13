@@ -56,12 +56,7 @@ const userSchema = new Schema(
     }
 );
 
-/**
- * Middleware function executed before saving a user to hash the password.
- * @function
- * @async
- * @name userSchema.pre
- */
+
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
 
@@ -69,24 +64,12 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
-/**
- * Method to check if the provided password is correct.
- * @function
- * @async
- * @name userSchema.methods.isPasswordCorrect
- * @param {string} password - The password to check.
- * @returns {boolean} - Returns true if the password is correct, false otherwise.
- */
+
 userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
 
-/**
- * Method to generate an access token for the user.
- * @function
- * @name userSchema.methods.generateAccessToken
- * @returns {string} - The generated access token.
- */
+
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
@@ -104,9 +87,6 @@ userSchema.methods.generateAccessToken = function () {
 
 /**
  * Method to generate a refresh token for the user.
- * @function
- * @name userSchema.methods.generateRefreshToken
- * @returns {string} - The generated refresh token.
  */
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
