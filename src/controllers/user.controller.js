@@ -114,7 +114,7 @@ export const loginUser = AsyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid credentials");
   }
   // Generate tokens
-  console.log("loging user", user._id);
+  // console.log("loging user", user._id);
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
