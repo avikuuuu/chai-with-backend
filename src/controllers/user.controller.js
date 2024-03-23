@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
-    console.log("User:", user); // Log user object to debug
+    // console.log("User:", user); // Log user object to debug
     if (!user) {
       throw new Error("User not found"); // Handle case when user is not found
     }
@@ -17,7 +17,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     const refreshToken = user.generateRefreshToken();
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
-    console.log("User after token generation:", user); // Log user object after token generation
+    // console.log("User after token generation:", user); // Log user object after token generation
 
     return { accessToken, refreshToken };
   } catch (error) {
@@ -170,38 +170,41 @@ export const logoutUser = AsyncHandler(async (req, res) => {
 export const refreshAccessToken = AsyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
+
   if (!incomingRefreshToken) {
-    throw new ErrorAuth(401, "No token provided");
+    throw new ApiError(401, "unauthorized token ");
   }
   try {
     const decodeToken = jwt.verify(
       incomingRefreshToken,
-      process.env.ACCESS_TOKEN_SECRET
+      process.env.REFRESH_TOKEN_SECRET
     );
-    const user = await User.findById(decodeToken.id);
+    const user = await User.findById(decodeToken?._id);
     if (!user) {
       throw new ErrorAuth(402, "User not found");
     }
     if (user?.refreshToken !== incomingRefreshToken) {
-      throw new ErrorAuth(500, "Invalid Token");
+      throw new ErrorAuth(401, "Invalid Token");
     }
     const options = {
       httpOnly: true,
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } = generateAccessAndRefereshTokens(
+
+
+    const { accessToken, refreshToken:newRefreshToken } = await generateAccessAndRefreshTokens(
       user._id
     );
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken)
+      .cookie("refreshToken", newRefreshToken,options)
       .json(
         new ApiResponse(
           200,
           { accessToken, refreshToken: newRefreshToken },
-          "New tokens generated"
+          "New refresh token  generated"
         )
       );
   } catch (error) {
